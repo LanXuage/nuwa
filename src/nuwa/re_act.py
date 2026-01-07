@@ -653,10 +653,14 @@ class ReActAgent(ChatLLM):
                         flags=re.M,
                     )
                     yield chunk
+                    pre_chunk.content = ""
                     break
-                if chunk.state != "END":
-                    yield pre_chunk
-                    pre_chunk = chunk
+                yield pre_chunk
+                pre_chunk = chunk
+            if pre_chunk.content:
+                if pre_chunk.state == "END":
+                    pre_chunk.state = "DOING"
+                yield pre_chunk
             self.open_symbols.clear()
             self.cache.clear()
             logger.info("actions %s", actions)
