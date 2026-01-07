@@ -571,9 +571,11 @@ class ReActAgent(ChatLLM):
         self, input_chunks: AsyncGenerator[InputChunk, None] | Dict[str, Any]
     ) -> AsyncGenerator[InputChunk, None]:
         input_dict = await self.parse_input(input_chunks)
+        action_close = self.symbols_open_close_map.get(self.action_open)
         for round_idx in range(self.max_loop):
             self.round_idx = round_idx
             actions: List[Function] = []
+            pre_chunk = InputChunk(state="DOING", content="")
             async for chunk in super(ChatLLM, self).run(input_dict):
                 for action in self.parse_labels(chunk):
                     if action.get("name") != "answer":
@@ -588,7 +590,6 @@ class ReActAgent(ChatLLM):
                         continue
                     action_value = self.action_io.getvalue().strip()
                     if self.action_open in self.open_symbols and action_value:
-                        action_close = self.symbols_open_close_map.get(self.action_open)
                         if action_value[-1] not in action_close:
                             action_value += action_close
                         elif action_value[-1] == "<":
@@ -613,6 +614,19 @@ class ReActAgent(ChatLLM):
                         self.action_io.truncate(0)
                         while self.open_symbols.pop() != self.action_open:
                             pass
+                    chunk.content = pre_chunk.content + chunk.content
+                    if chunk.content.rfind(action_close) != -1:
+                        chunk.content = chunk.content[
+                            : chunk.content.rfind(action_close) + len(action_close)
+                        ]
+                    elif chunk.content[-1] not in action_close:
+                        chunk.content += action_close
+                    elif chunk.content[-1] == "<":
+                        chunk.content += action_value[1:]
+                    else:
+                        chunk.content += action_close[
+                            action_close.index(chunk.content[-2:]) + 2 :
+                        ]
                     yield chunk
                     logger.info("open symbols %s", self.open_symbols)
                     self.open_symbols.clear()
@@ -631,6 +645,7 @@ class ReActAgent(ChatLLM):
                     self.open_symbols = []
                     return
                 if self.open_symbols and self.open_symbols[-1] == self.observation_open:
+                    chunk.content = pre_chunk.content + chunk.content
                     chunk.content = re.sub(
                         rf"{re.escape(self.observation_open)}.*$",
                         "",
@@ -640,7 +655,8 @@ class ReActAgent(ChatLLM):
                     yield chunk
                     break
                 if chunk.state != "END":
-                    yield chunk
+                    yield pre_chunk
+                    pre_chunk = chunk
             self.open_symbols.clear()
             self.cache.clear()
             logger.info("actions %s", actions)
