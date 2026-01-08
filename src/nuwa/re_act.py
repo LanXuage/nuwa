@@ -726,7 +726,11 @@ class ReActAgent(ChatLLM):
                     assistant_idx = len(self.historical_messages) - 1
                     self.historical_messages[assistant_idx]["tool_calls"] = []
                     for action in actions:
-                        tool_response = await self.call_tool(action)
+                        tool_response = {}
+                        try:
+                            tool_response = await self.call_tool(action)
+                        except Exception as e:
+                            tool_response["err_msg"] = str(e)
                         tool_call_id = str(uuid4())
                         tool_calls = self.historical_messages[assistant_idx].get(
                             "tool_calls", []
