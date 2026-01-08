@@ -109,9 +109,9 @@ class ReActAgent(ChatLLM):
             self.tools.append(
                 ToolEntity(
                     name="request_user_choice",
+                    description="提供问题和多个可选项并询问用户的选择",
                     parameters=ToolObjectParameter(
                         type="object",
-                        description="提供问题和多个可选项并询问用户的选择",
                         properties={
                             "question": ToolParameter(
                                 type="string", description="询问用户的问题"
