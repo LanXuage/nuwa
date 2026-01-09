@@ -465,3 +465,25 @@ async def test_re_act_agent_hook_tool_call(api_key: str):
         }
     ):
         logger.info("测试 %s", c)
+
+
+@pytest.mark.asyncio
+async def test_re_act_agent_answer_format(api_key: str):
+    agent = ReActAgent(
+        model="deepseek-v3.2",
+        system_prompt="你是一个{role}",
+        api_key=api_key,
+        extra_body={"enable_thinking": True},
+        stream=True,
+        with_time=True,
+        enable_chat_history=True,
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        answer_format="markdown",
+    )
+    async for c in agent.run(
+        {
+            "user": "讲一个笑话给我听",
+            "system": {"role": "通用助手"},
+        }
+    ):
+        logger.info("测试 %s", c)

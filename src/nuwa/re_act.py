@@ -15,7 +15,7 @@ from .tool import (
 )
 from .base import MessagesManager, InputChunk
 from pydantic import TypeAdapter
-from typing import List, Optional, Dict, Union, AsyncGenerator, Any, Callable, Awaitable
+from typing import List, Optional, Dict, Union, AsyncGenerator, Any, Callable, Awaitable, Literal
 from openai.types.chat import (
     ChatCompletionSystemMessageParam,
     ChatCompletionToolMessageParam,
@@ -70,6 +70,7 @@ class ReActAgent(ChatLLM):
         enable_chat_history: bool = True,
         enable_selection: bool = False,
         hook_tool_call: Optional[Callable[[ChatLLM, Function], Awaitable[Any]]] = None,
+        answer_format: Literal["normal", "markdown"] = "normal"
     ):
         super().__init__(
             model=model,
@@ -105,7 +106,7 @@ class ReActAgent(ChatLLM):
         self.tools.append(
             ToolEntity(
                 name="answer",
-                parameters=ToolParameter(type="string", description="给用户的最终响应"),
+                parameters=ToolParameter(type="string", description=f"给用户的最终响应{'(Markdown格式)' if answer_format == 'markdown' else ''}"),
             )
         )
         if enable_selection:
@@ -132,6 +133,7 @@ class ReActAgent(ChatLLM):
                                 description="可选项列表中最推荐的一个选项",
                             ),
                         },
+                        required=["question", "options", "recommended_option"]
                     ),
                 )
             )

@@ -113,12 +113,12 @@ class QdrantMessagesManager(MessagesManager):
                     ]
                 ),
                 with_payload=True,
-                limit=2,  # Increased limit for better context
+                limit=5,  # Increased limit for better context
             )
 
             # Process search results and get full conversations
             conversation_ids = []
-            logger.info("points %s", len(search_result.points))
+            logger.debug("points %s", len(search_result.points))
             for point in search_result.points:
                 conversation_id = point.payload.get("conversation_id", "")
                 if not conversation_id or conversation_id in conversation_ids:
@@ -147,7 +147,7 @@ class QdrantMessagesManager(MessagesManager):
                     msg_id = record.payload.get("msg_id")
                     if not msg_id or msg_id in msg_ids:
                         continue
-                    logger.info(
+                    logger.debug(
                         "conversation_id %s, msg_id %s", conversation_id, msg_id
                     )
                     msg_ids.append(msg_id)
@@ -155,7 +155,7 @@ class QdrantMessagesManager(MessagesManager):
                     if message:
                         messages.append(message)
 
-            logger.info(f"Retrieved {len(messages)} messages for session {session_id}")
+            logger.debug(f"Retrieved {len(messages)} messages for session {session_id}")
 
         except Exception as e:
             logger.error(f"Error retrieving messages for session {session_id}: {e}")
@@ -217,11 +217,11 @@ class QdrantMessagesManager(MessagesManager):
         conversation_id = str(uuid4())
         points: List[PointStruct] = []
         now = datetime.now(tz=ZoneInfo("Asia/Shanghai"))
-        if messages and messages[0].get("role") != "user":
-            raise ValueError("messages the first must be user")
+        if messages and messages[0].get("role") not in ["user", "tool"]:
+            raise ValueError("messages the first must be user or tool")
 
         for msg_id, message in enumerate(messages, 1):
-            logger.info("msg_id %s, message %s", msg_id, message)
+            logger.debug("msg_id %s, message %s", msg_id, message)
             try:
                 role = message.get("role")
                 if not isinstance(role, str):
@@ -292,34 +292,6 @@ class QdrantMessagesManager(MessagesManager):
                 )
             )
         return points
-
-    def _split_into_chunks(self, text: str) -> List[str]:
-        """
-        将文本分割成段落。
-
-        Args:
-            text: 要分割的文本
-
-        Returns:
-            List[str]: 段落列表
-        """
-        # 按段落分割，保留分隔符
-        paragraphs = re.split(r"(\n\s*\n)", text)
-        # 过滤空段落并合并分隔符
-        chunks = []
-        current = ""
-
-        for p in paragraphs:
-            if p.strip() == "" and current:
-                chunks.append(current.strip())
-                current = ""
-            elif p.strip():
-                current += p
-
-        if current.strip():
-            chunks.append(current.strip())
-
-        return chunks
 
     async def _process_text_message(
         self,
