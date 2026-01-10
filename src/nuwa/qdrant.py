@@ -18,6 +18,7 @@ from qdrant_client.http.models import (
     PointStruct,
     OrderBy,
     Direction,
+    ScoredPoint,
 )
 from openai.types.chat import ChatCompletionMessageParam
 
@@ -112,10 +113,36 @@ class QdrantMessagesManager(MessagesManager):
                         )
                     ]
                 ),
+                with_vectors=False,
                 with_payload=True,
                 limit=5,  # Increased limit for better context
             )
-
+            recent_records, _ = await self.client.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=Filter(
+                    must=[
+                        FieldCondition(
+                            key="session_id", match=MatchValue(value=session_id)
+                        )
+                    ]
+                ),
+                with_vectors=False,
+                with_payload=True,
+                order_by=OrderBy(key="create_time", direction=Direction.DESC),
+                limit=200,
+            )
+            conversation_id = None
+            for record in recent_records:
+                if conversation_id != record.payload.get("conversation_id", ""):
+                    search_result.points.append(
+                        ScoredPoint(
+                            id=record.id, version=0, score=0, payload=record.payload
+                        )
+                    )
+                    if conversation_id != None:
+                        conversation_id = None
+                        break
+                    conversation_id = record.payload.get("conversation_id", "")
             # Process search results and get full conversations
             conversation_ids = []
             logger.debug("points %s", len(search_result.points))
@@ -139,7 +166,7 @@ class QdrantMessagesManager(MessagesManager):
                     with_vectors=False,
                     with_payload=True,
                     order_by=OrderBy(key="msg_id", direction=Direction.ASC),
-                    limit=100,
+                    limit=500,
                 )
                 # Convert records to message format
                 msg_ids = []

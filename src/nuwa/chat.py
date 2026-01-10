@@ -37,7 +37,9 @@ class ChatLLM(OpenAI):
         with_others: str = "",
         stop: Optional[list] = None,
         base_url: str = "https://api.openai.com/v1",
-        hook_tool_call: Optional[Callable[["ChatLLM", Function], Awaitable[Any]]] = None,
+        hook_tool_call: Optional[
+            Callable[["ChatLLM", Function], Awaitable[Any]]
+        ] = None,
     ):
         self.session_id = session_id or str(uuid4())
         self.hook_tool_call = hook_tool_call
@@ -49,7 +51,7 @@ class ChatLLM(OpenAI):
         self.tool_names = (
             (tools_manager.list_tools()) if tools_manager else []
         )  # Avoid modifying the original list
-        self.new_messages_idx = 0
+        self.new_messages_idx = -1
         self.tools = [
             self.tools_manager.get_tool(name).entity
             for name in self.tool_names
@@ -99,8 +101,10 @@ class ChatLLM(OpenAI):
             self.historical_messages = await self.messages_manager.get_messages(
                 self.session_id, input_dict.get("user", "")
             )
-            self.new_messages_idx = len(self.historical_messages)
-        return await super().generate_messages(input_dict)
+        messages = await super().generate_messages(input_dict)
+        if self.new_messages_idx == -1:
+            self.new_messages_idx = max(len(self.historical_messages) - 1, 0)
+        return messages
 
     async def save_messages(self):
         logger.info(
@@ -112,6 +116,7 @@ class ChatLLM(OpenAI):
                 self.session_id,
                 self.historical_messages[self.new_messages_idx :],
             )
+            self.new_messages_idx = -1
             self.historical_messages.clear()
         elif len(self.historical_messages) > 10:
             while self.historical_messages[0].get("role") != "user":
@@ -121,7 +126,6 @@ class ChatLLM(OpenAI):
         self, input_chunks: AsyncGenerator[InputChunk, None] | Dict[str, Any]
     ) -> AsyncGenerator[InputChunk, None]:
         content = ""
-
         async for chunk in super().run(input_chunks):
             content += chunk.content
             yield chunk

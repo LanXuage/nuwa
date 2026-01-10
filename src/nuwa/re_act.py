@@ -70,7 +70,7 @@ class ReActAgent(ChatLLM):
         enable_chat_history: bool = True,
         enable_selection: bool = False,
         hook_tool_call: Optional[Callable[[ChatLLM, Function], Awaitable[Any]]] = None,
-        answer_format: Literal["normal", "markdown"] = "normal"
+        answer_format: Literal["normal", "markdown"] = "normal",
     ):
         super().__init__(
             model=model,
@@ -91,6 +91,7 @@ class ReActAgent(ChatLLM):
             hook_tool_call=hook_tool_call,
         )
         self.enable_chat_history = enable_chat_history
+        self._new_messages_idx = True
         self.max_loop = max_loop
         self.cache = []
         self.open_symbols = []
@@ -195,10 +196,12 @@ class ReActAgent(ChatLLM):
         if self.round_idx > 0 and self.historical_messages[-1].get("role") == "user":
             del self.historical_messages[-1]
             del messages[-1]
-            self.new_messages_idx = max(self.new_messages_idx - 1, 0)
         if not self.enable_chat_history:
             # If chat history is disabled, only keep the system message and the current user message
             messages = [messages[0], messages[-1]]
+        if self._new_messages_idx:
+            self.new_messages_idx = max(len(self.historical_messages) - 1, 0)
+            self._new_messages_idx = False
         return messages
 
     def parse_system_prompt(self, instruction: str) -> str:
@@ -611,6 +614,7 @@ class ReActAgent(ChatLLM):
     async def run(
         self, input_chunks: AsyncGenerator[InputChunk, None] | Dict[str, Any]
     ) -> AsyncGenerator[InputChunk, None]:
+        self._new_messages_idx = True
         input_dict = await self.parse_input(input_chunks)
         action_close = self.symbols_open_close_map.get(self.action_open)
         for round_idx in range(self.max_loop):
