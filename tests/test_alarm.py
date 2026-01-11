@@ -196,7 +196,7 @@ class TestAlarmManager:
         manager = AlarmManager()
         future_time = datetime.now() + timedelta(seconds=0.1)
         
-        with patch('src.nuwa.alarm.logger.info') as mock_info:
+        with patch('src.nuwa.alarm.logger.debug') as mock_info:
             alarm_id = await manager.set_alarm_for_oneself(
                 time=future_time,
                 reminder="无回调测试",

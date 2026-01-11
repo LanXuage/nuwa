@@ -47,7 +47,7 @@ class ChatLLM(OpenAI):
         self.tools_manager = tools_manager
         self.mcp = mcp
         self.mcp_timeout = mcp_timeout
-        logger.info("mcp %s", mcp)
+        logger.debug("mcp %s", mcp)
         self.tool_names = (
             (tools_manager.list_tools()) if tools_manager else []
         )  # Avoid modifying the original list
@@ -74,7 +74,7 @@ class ChatLLM(OpenAI):
         if self.mcp:
             async with Client(transport=self.mcp, timeout=self.mcp_timeout) as client:
                 tools = await client.list_tools()
-                logger.info("init_mcp_tools %s", tools)
+                logger.debug("init_mcp_tools %s", tools)
                 for tool in tools:
                     self.tool_names.append(tool.name)
                     self.tools.append(get_tool_entity(tool=tool))
@@ -107,7 +107,7 @@ class ChatLLM(OpenAI):
         return messages
 
     async def save_messages(self):
-        logger.info(
+        logger.debug(
             "Save messages %s",
             json.dumps(self.historical_messages, indent=2, ensure_ascii=False),
         )

@@ -16,7 +16,7 @@ async def test_re_act_agent_once_chat(api_key: str):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
     async for c in agent.run({"user": "你好"}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -28,9 +28,9 @@ async def test_re_act_agent_multi_chat(api_key: str):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
     async for c in agent.run({"user": "现在是2025年7月1号早上7点10分"}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
     async for c in agent.run({"user": "你好，现在是几点"}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -43,9 +43,9 @@ async def test_re_act_agent_with_time(api_key: str):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
     async for c in agent.run({"user": "现在是2025年7月1号早上7点10分么"}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
     async for c in agent.run({"user": "你好，现在是几点"}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -60,7 +60,7 @@ async def test_re_act_agent_with_think(api_key: str):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
     async for c in agent.run({"user": "猫有时间的概念么"}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -75,7 +75,7 @@ async def test_re_act_agent_with_think_and_time(api_key: str):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
     async for c in agent.run({"user": "还要再过多久才天亮呢"}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -104,7 +104,7 @@ async def test_re_act_agent_with_tools(api_key: str):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
     async for c in agent.run({"user": "今天广州天气怎么样"}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -135,7 +135,7 @@ async def test_re_act_agent_with_tools_and_stream(api_key: str):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
     async for c in agent.run({"user": "今天广州天气怎么样"}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -148,7 +148,7 @@ async def test_re_act_agent_system_prompt_format(api_key: str):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
     async for c in agent.run({"user": "你好呀", "system": {"role": "猫娘女仆"}}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
     agent = ReActAgent(
         model="deepseek-v3.2",
         system_prompt="你是一个{role}, 你的性格是{personality}",
@@ -159,7 +159,7 @@ async def test_re_act_agent_system_prompt_format(api_key: str):
     async for c in agent.run(
         {"user": "你好呀", "system": {"role": "猫娘女仆", "personality": "高冷"}}
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -174,7 +174,7 @@ async def test_re_act_agent_system_prompt_format_with_think(api_key: str):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
     async for c in agent.run({"user": "你好呀", "system": {"role": "猫娘女仆"}}):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
     agent = ReActAgent(
         model="deepseek-v3.2",
         system_prompt="你是一个{role}, 你的性格是{personality}",
@@ -187,7 +187,7 @@ async def test_re_act_agent_system_prompt_format_with_think(api_key: str):
     async for c in agent.run(
         {"user": "你好呀", "system": {"role": "猫娘女仆", "personality": "高冷"}}
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -205,7 +205,7 @@ async def test_re_act_agent_mcp(api_key: str):
     async for c in agent.run(
         {"user": "帮我生成一张猫娘的图片", "system": {"role": "通用助手"}}
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -226,7 +226,7 @@ async def test_re_act_agent_mcp_with_think(api_key: str):
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -263,14 +263,14 @@ async def test_re_act_agent_mcp_with_local_tool_mgr(api_key: str):
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
     async for c in agent.run(
         {
             "user": "今天天气怎么样",
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -307,14 +307,14 @@ async def test_re_act_agent_mcp_with_local_tool_mgr_with_think(api_key: str):
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
     async for c in agent.run(
         {
             "user": "广州今天天气怎么样",
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -333,14 +333,14 @@ async def test_re_act_agent_history(api_key: str):
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
     async for c in agent.run(
         {
             "user": "我在哪个城市",
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -361,14 +361,14 @@ async def test_re_act_agent_history_with_think(api_key: str):
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
     async for c in agent.run(
         {
             "user": "我在哪个城市",
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -390,14 +390,14 @@ async def test_re_act_agent_selection(api_key: str):
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
     async for c in agent.run(
         {
             "user": "黑夜",
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -419,7 +419,7 @@ async def test_re_act_agent_with_others(api_key: str):
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -440,9 +440,9 @@ async def test_re_act_agent_hook_tool_call(api_key: str):
         return {"desc": "部分晴朗：19摄氏度，湿度69%"}
 
     async def test_hook(agent: ReActAgent, func: Function):
-        logger.info("before call tool")
+        logger.debug("before call tool")
         resp = await agent.call_tool(func)
-        logger.info("after call tool %s", resp)
+        logger.debug("after call tool %s", resp)
         return resp
 
     agent = ReActAgent(
@@ -464,7 +464,7 @@ async def test_re_act_agent_hook_tool_call(api_key: str):
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)
 
 
 @pytest.mark.asyncio
@@ -486,4 +486,4 @@ async def test_re_act_agent_answer_format(api_key: str):
             "system": {"role": "通用助手"},
         }
     ):
-        logger.info("测试 %s", c)
+        logger.debug("测试 %s", c)

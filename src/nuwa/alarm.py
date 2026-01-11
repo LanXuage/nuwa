@@ -76,7 +76,7 @@ class AlarmManager:
             task.task = asyncio.create_task(self._schedule_alarm(task, delay))
             self.tasks[alarm_id] = task
             
-            logger.info(f"已设置闹钟 {alarm_id}: {time} - {reminder}")
+            logger.debug(f"已设置闹钟 {alarm_id}: {time} - {reminder}")
             return alarm_id
 
     async def set_alarm_for_user(
@@ -119,7 +119,7 @@ class AlarmManager:
             task.task = asyncio.create_task(self._schedule_alarm(task, delay))
             self.tasks[alarm_id] = task
             
-            logger.info(f"已设置用户闹钟 {alarm_id}: {time} - {reminder}")
+            logger.debug(f"已设置用户闹钟 {alarm_id}: {time} - {reminder}")
             return alarm_id
 
     async def _schedule_alarm(self, alarm_task: AlarmTask, delay: float):
@@ -132,7 +132,7 @@ class AlarmManager:
             await self._trigger_alarm(alarm_task)
             
         except asyncio.CancelledError:
-            logger.info(f"闹钟 {alarm_task.alarm_id} 已被取消")
+            logger.debug(f"闹钟 {alarm_task.alarm_id} 已被取消")
         except Exception as e:
             logger.error(f"闹钟 {alarm_task.alarm_id} 触发失败: {e}")
         finally:
@@ -142,7 +142,7 @@ class AlarmManager:
 
     async def _trigger_alarm(self, alarm_task: AlarmTask):
         """触发闹钟"""
-        logger.info(f"闹钟触发: {alarm_task.alarm_id} - {alarm_task.reminder}")
+        logger.debug(f"闹钟触发: {alarm_task.alarm_id} - {alarm_task.reminder}")
         
         if alarm_task.remindee == "oneself":
             await self._wake_up_agent(alarm_task)
@@ -160,7 +160,7 @@ class AlarmManager:
                 logger.error(f"闹钟回调执行失败: {e}")
         
         # 如果没有回调，至少记录日志
-        logger.info(f"Agent闹钟唤醒: {reminder_msg}")
+        logger.debug(f"Agent闹钟唤醒: {reminder_msg}")
 
     async def _notify_user(self, alarm_task: AlarmTask):
         """通知用户（预留接口）"""
@@ -173,7 +173,7 @@ class AlarmManager:
                 logger.error(f"用户闹钟回调执行失败: {e}")
         
         # 记录日志，实际应用中应该通过其他方式通知用户
-        logger.info(f"用户闹钟触发（预留接口）: {reminder_msg}")
+        logger.debug(f"用户闹钟触发（预留接口）: {reminder_msg}")
 
     async def cancel_alarm(self, alarm_id: str) -> bool:
         """取消闹钟"""
@@ -182,7 +182,7 @@ class AlarmManager:
             if task and task.task:
                 task.task.cancel()
                 self.tasks.pop(alarm_id, None)
-                logger.info(f"已取消闹钟 {alarm_id}")
+                logger.debug(f"已取消闹钟 {alarm_id}")
                 return True
             return False
 

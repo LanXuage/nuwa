@@ -3,7 +3,7 @@ import json
 import logging
 import numpy as np
 
-from typing import List, Optional
+from typing import List, Optional, Dict
 from uuid import uuid4
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -96,7 +96,7 @@ class QdrantMessagesManager(MessagesManager):
         """Retrieve relevant conversation history for the session."""
         await self.try_create_collection()
 
-        messages: List[ChatCompletionMessageParam] = []
+        time_messages_map: Dict[int, List[ChatCompletionMessageParam]] = {}
 
         try:
             # Get embeddings for semantic search
@@ -168,6 +168,7 @@ class QdrantMessagesManager(MessagesManager):
                     order_by=OrderBy(key="msg_id", direction=Direction.ASC),
                     limit=500,
                 )
+                messages: List[ChatCompletionMessageParam] = []
                 # Convert records to message format
                 msg_ids = []
                 for record in conversation_records:
@@ -181,12 +182,15 @@ class QdrantMessagesManager(MessagesManager):
                     message = self._convert_payload_to_message(record.payload)
                     if message:
                         messages.append(message)
-
-            logger.debug(f"Retrieved {len(messages)} messages for session {session_id}")
+                time_messages_map[point.payload.get("create_time", 0)] = messages
 
         except Exception as e:
             logger.error(f"Error retrieving messages for session {session_id}: {e}")
 
+        messages: List[ChatCompletionMessageParam] = []
+        for k in sorted(time_messages_map.keys()):
+            msgs = time_messages_map.get(k, [])
+            messages.extend(msgs)
         return messages
 
     @staticmethod

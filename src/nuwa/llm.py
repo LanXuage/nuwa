@@ -1,3 +1,4 @@
+import os
 import json
 import asyncio
 import logging
@@ -14,6 +15,7 @@ from openai import omit
 
 from .base import Node, InputChunk
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger()
 
@@ -47,7 +49,7 @@ class OpenAI(Node):
         self.stream = stream
 
     async def __ainit__(self):
-        logger.info("ainit")
+        logger.debug("ainit")
 
     async def parse_input(
         self, input_chunks: Union[AsyncGenerator[InputChunk, None], Dict[str, Any]]
@@ -74,7 +76,11 @@ class OpenAI(Node):
         if self.with_others:
             proset_infos.append(self.with_others)
         if self.with_time:
-            proset_infos.append("系统时间：{}".format(datetime.now().isoformat()))
+            proset_infos.append(
+                "系统时间：{}".format(
+                    datetime.now(tz=ZoneInfo(os.environ.get("TZ") or "Asia/Shanghai")).isoformat()
+                )
+            )
         if proset_infos:
             proset_infos.append("\n")
         system_content = "\n".join(proset_infos) + system_content
@@ -98,7 +104,7 @@ class OpenAI(Node):
     async def run(
         self, input_chunks: Union[AsyncGenerator[InputChunk, None], Dict[str, Any]]
     ) -> AsyncGenerator[InputChunk, None]:
-        logger.info("need init %s", self.need_init)
+        logger.debug("need init %s", self.need_init)
         if self.need_init:
             await self.__ainit__()
             self.need_init = False
@@ -131,7 +137,7 @@ class OpenAI(Node):
                             continue
 
                         delta = chunk.choices[0].delta
-                        logger.info("delta %s", delta)
+                        logger.debug("delta %s", delta)
 
                         if delta.content:
                             if in_reasoning_mode:

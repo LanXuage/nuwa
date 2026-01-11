@@ -676,9 +676,9 @@ class ReActAgent(ChatLLM):
                             action_close.index(chunk.content[-2:]) + 2 :
                         ]
                     yield chunk
-                    logger.info("open symbols %s", self.open_symbols)
+                    logger.debug("open symbols %s", self.open_symbols)
                     self.open_symbols.clear()
-                    logger.info("cache %s", self.open_symbols)
+                    logger.debug("cache %s", self.open_symbols)
                     self.cache.clear()
                     if self.enable_chat_history:
                         await self.save_messages()
@@ -712,7 +712,7 @@ class ReActAgent(ChatLLM):
                 yield pre_chunk
             self.open_symbols.clear()
             self.cache.clear()
-            logger.info("actions %s", actions)
+            logger.debug("actions %s", actions)
             if actions:
                 thought_value = self.thought_io.getvalue().strip()
                 if thought_value:

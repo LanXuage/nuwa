@@ -147,7 +147,7 @@ class ToolsManager:
                     ),
                 ),
             )
-            logger.info("Registered tool: %s", tool_name)
+            logger.debug("Registered tool: %s", tool_name)
             return func
 
         return decorator
@@ -162,7 +162,7 @@ class ToolsManager:
 
     async def call_tool(self, func: Function) -> Any:
         """Call a tool with the provided function specification."""
-        logger.info("call tool %s", func)
+        logger.debug("call tool %s", func)
         tool = self.get_tool(func.get("name"))
         if not tool:
             raise ValueError(f"Tool '{func.get('name')}' not found")
