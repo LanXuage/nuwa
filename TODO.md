@@ -1,18 +1,29 @@
-# 添加清空历史聊天记录功能
+# 开发文档撰写任务
+
+## 目标
+为Nuwa项目撰写全面的开发文档，涵盖架构设计、代码设计、代码开发、设计模型和代码管理等方面的开发原则和规范。
 
 ## 步骤
-1. [ ] 修改 `src/nuwa/base.py`：在 MessagesManager 类中添加抽象方法 `clear_messages(session_id: str)`
-2. [ ] 修改 `src/nuwa/qdrant.py`：在 QdrantMessagesManager 类中实现 `clear_messages` 方法
-3. [ ] 可选：在 `src/nuwa/chat.py` 的 ChatLLM 类中添加公共方法 `clear_chat_history()`
-4. [ ] 验证更改，确保没有语法错误
+1. [x] 创建文档大纲
+2. [x] 撰写引言和项目概述
+3. [x] 撰写架构设计原则
+4. [x] 撰写代码设计规范
+5. [x] 撰写代码开发规范
+6. [x] 撰写设计模式应用
+7. [x] 撰写代码管理实践
+8. [x] 撰写测试策略
+9. [x] 撰写部署与运维
+10. [x] 撰写贡献指南
+11. [x] 撰写附录
+12. [x] 保存文档并更新索引
+13. [x] 为所有约束、规范和要求添加编号索引
+14. [x] 验证文档完整性
 
-## 依赖文件
-- src/nuwa/base.py
-- src/nuwa/qdrant.py
-- src/nuwa/chat.py (可选)
+## 状态
+已完成
 
-## 完成状态
-- [x] 修改 `src/nuwa/base.py`：在 MessagesManager 类中添加抽象方法 `clear_messages(session_id: str)`
-- [x] 修改 `src/nuwa/qdrant.py`：在 QdrantMessagesManager 类中实现 `clear_messages` 方法
-- [x] 可选：在 `src/nuwa/chat.py` 的 ChatLLM 类中添加公共方法 `clear_chat_history()`
-- [x] 验证更改，确保没有语法错误
+## 产出文件
+- `docs/development_guide.md`：完整的开发指南文档（包含编号索引）
+- 更新了 `docs/index.md` 以添加开发指南链接
+- 更新了 `docs/zh/index.md` 以添加开发指南链接
+- 更新了 `TODO.md` 以反映完成状态

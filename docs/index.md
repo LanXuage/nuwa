@@ -12,6 +12,7 @@ Welcome to the Nuwa documentation! Nuwa is a powerful framework for creating AI 
 - [Full Documentation](README.md) - Complete guide to using Nuwa
 - [Architecture and Design Patterns](architecture_design.md) - Deep dive into system architecture
 - [API Reference](api_reference.md) - Detailed API documentation
+- [Development Guide](development_guide.md) - Development principles and best practices
 
 ## Core Concepts
 

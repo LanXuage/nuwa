@@ -12,6 +12,7 @@
 - [完整使用文档](README.md) - Nuwa 的全面使用指南
 - [架构和设计模式](architecture_design.md) - 系统架构深度解析
 - [API 参考](api_reference.md) - 详细的 API 文档
+- [开发指南](../development_guide.md) - 开发原则和最佳实践（英文）
 
 ## 核心概念
 
