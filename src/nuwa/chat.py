@@ -122,6 +122,14 @@ class ChatLLM(OpenAI):
             while self.historical_messages[0].get("role") != "user":
                 del self.historical_messages[0]
 
+    async def clear_chat_history(self):
+        """Clear historical chat messages for the current session."""
+        if self.messages_manager:
+            await self.messages_manager.clear_messages(self.session_id)
+        self.historical_messages.clear()
+        self.new_messages_idx = -1
+        logger.debug(f'Cleared chat history for session {self.session_id}')
+
     async def run(
         self, input_chunks: AsyncGenerator[InputChunk, None] | Dict[str, Any]
     ) -> AsyncGenerator[InputChunk, None]:

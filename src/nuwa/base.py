@@ -20,6 +20,11 @@ class MessagesManager(ABC):
     async def save_messages(self, session_id: str, messages: List[ChatCompletionMessageParam]):
         raise NotImplementedError
 
+    @abstractmethod
+    async def clear_messages(self, session_id: str):
+        """Clear all historical chat messages for the given session."""
+        raise NotImplementedError
+
 
 class Node(ABC):
     def __init__(self):

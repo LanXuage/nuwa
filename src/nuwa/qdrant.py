@@ -413,3 +413,22 @@ class QdrantMessagesManager(MessagesManager):
             )
         )
         return points
+
+    async def clear_messages(self, session_id: str):
+        """Clear all historical chat messages for the given session."""
+        await self.try_create_collection()
+        try:
+            await self.client.delete(
+                collection_name=self.collection_name,
+                points_selector=Filter(
+                    must=[
+                        FieldCondition(
+                            key="session_id", match=MatchValue(value=session_id)
+                        )
+                    ]
+                ),
+            )
+            logger.debug(f"Cleared messages for session {session_id}")
+        except Exception as e:
+            logger.error(f"Error clearing messages for session {session_id}: {e}")
+            raise e
