@@ -31,6 +31,7 @@ class ToolParameter(BaseModel):
         description: 参数描述，可选。
         enum: 可选值枚举列表，可选。
     """
+
     type: Literal["object", "string", "number", "boolean", "array"]
     description: Optional[str] = None
     enum: Optional[List[str]] = None
@@ -42,6 +43,7 @@ class ToolArrayParameter(ToolParameter):
     继承自 ToolParameter，增加 items 字段描述数组元素类型。
     设计规范：继承层次清晰（C-005）。
     """
+
     items: Union["ToolObjectParameter", "ToolArrayParameter", ToolParameter]
 
 
@@ -55,6 +57,7 @@ class ToolObjectParameter(ToolParameter):
         properties: 属性字典，键为属性名，值为对应的参数定义。
         required: 必需属性名列表。
     """
+
     properties: Dict[
         str, Union["ToolObjectParameter", ToolArrayParameter, ToolParameter]
     ] = {}
@@ -72,6 +75,7 @@ class ToolEntity(BaseModel):
         parameters: 工具参数定义，可以是对象参数或简单参数。
         description: 工具描述，可选。
     """
+
     name: str
     parameters: Union[ToolObjectParameter, ToolParameter] = ToolObjectParameter(
         type="object", properties={}, required=[]
@@ -127,7 +131,8 @@ def get_tool_entity(tool: MCPTool) -> ToolEntity:
                     if t == "integer":
                         t = "number"
                     break
-        properties[k] = ToolParameter(type=t, description=v.get("description"))
+        if t in ["object", "string", "number", "boolean", "array"]:
+            properties[k] = ToolParameter(type=t, description=v.get("description"))  # type: ignore
     parameters = ToolObjectParameter(type="object", properties=properties)
     return ToolEntity(
         name=tool.name, parameters=parameters, description=tool.description
@@ -156,7 +161,7 @@ class ToolRegistry:
     def tool(
         self,
         name: Optional[str] = None,
-        parameters: Union[ToolObjectParameter, ToolParameter] = ToolObjectParameter(
+        parameters: ToolObjectParameter = ToolObjectParameter(
             type="object", properties={}, required=[]
         ),
         description: Optional[str] = None,
@@ -205,7 +210,7 @@ class ToolRegistry:
                         if hasattr(v, "__metadata__")
                         else None
                     )
-                elif isinstance(v, typing._AnnotatedAlias):
+                elif isinstance(v, typing._AnnotatedAlias):  # type: ignore
                     # 适用于旧版本 Python
                     item_type = v.__args__[0]
                     item_desc = (v.__metadata__ or ("",))[0]
