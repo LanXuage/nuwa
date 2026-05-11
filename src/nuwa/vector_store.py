@@ -35,7 +35,6 @@ from qdrant_client.http.models import (
 from openai.types.chat import ChatCompletionMessageParam
 
 from .base import ConversationStorage
-from .embeddings import get_embeddings
 
 logger = logging.getLogger()
 
@@ -107,12 +106,13 @@ class VectorBackedStorage(ConversationStorage):
         Returns:
             嵌入向量列表，每个向量为浮点数列表。
         """
-        return await get_embeddings(
-            inputs,
-            embedding_model=self.embedding_model,
-            client=self.embedding_client,
-            dimensions=self.vector_size,
-        )
+        # return await get_embeddings(
+        #     inputs,
+        #     embedding_model=self.embedding_model,
+        #     client=self.embedding_client,
+        #     dimensions=self.vector_size,
+        # )
+        return []
 
     async def try_create_collection(self) -> bool:
         """确保集合存在，不存在则创建。
@@ -227,7 +227,7 @@ class VectorBackedStorage(ConversationStorage):
                             id=record.id, version=0, score=0, payload=record.payload
                         )
                     )
-                    if conversation_id != None:
+                    if conversation_id is not None:
                         conversation_id = None
                         break
                     conversation_id = record.payload.get("conversation_id", "")
@@ -279,11 +279,11 @@ class VectorBackedStorage(ConversationStorage):
         except Exception as e:
             logger.error(f"Error retrieving messages for session {session_id}: {e}")
 
-        messages: List[ChatCompletionMessageParam] = []
+        all_messages: List[ChatCompletionMessageParam] = []
         for k in sorted(time_messages_map.keys()):
             msgs = time_messages_map.get(k, [])
-            messages.extend(msgs)
-        return messages
+            all_messages.extend(msgs)
+        return all_messages
 
     @staticmethod
     def _cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
@@ -436,7 +436,7 @@ class VectorBackedStorage(ConversationStorage):
         tool_calls = message.get("tool_calls")
         if tool_calls:
             snippet = json.dumps(
-                [tool_call.get("function") for tool_call in tool_calls],
+                [tool_call.get("function") for tool_call in tool_calls],  # type: ignore[attr-defined]
                 ensure_ascii=False,
                 separators=(",", ":"),
             )

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: GitHub Push Notify
+run-name: ${{ github.actor }} Push
+on:
+  - pull_request
+jobs:
+  notify-wxwork:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Send notifications to WXWork
+        run: |
+          curl '${{ secrets.WX_WORK_WOODEN_BOAT_BOT_WEBHOOK }}' \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"msgtype\": \"markdown\",
+              \"markdown\": {
+                \"content\": \"| 仓库 | ${{ github.repository }} |\n| --- | --- |\n| info | ${{ github.event.pull_request.comments }}|",
+                \"mentioned_list\": [\"@all\"]
+              }
+            }"

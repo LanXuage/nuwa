@@ -1,6 +1,7 @@
 import pytest
 import asyncio
-from src.nuwa.tool import ToolRegistry, Tool, ToolEntity, ToolObjectParameter, ToolParameter
+from src.nuwa.tools.registry import ToolRegistry
+from src.nuwa.tools.models import Tool, ToolEntity, ToolObjectParameter, ToolParameter
 
 
 def test_tools_manager_initialization():
@@ -69,7 +70,7 @@ async def test_call_tool_sync():
     tool = Tool(func=sync_func, entity=tool_entity)
     manager.add_tool(tool)
     # 调用工具
-    from src.nuwa.chat import ToolInvocation
+    from src.nuwa.types import ToolInvocation
     func = ToolInvocation(name="sync_tool", arguments='{"x": 5}')
     result = await manager.call_tool(func)
     assert result == 10
@@ -93,7 +94,7 @@ async def test_call_tool_async():
         return text.upper()
     tool = Tool(func=async_func, entity=tool_entity)
     manager.add_tool(tool)
-    from src.nuwa.chat import ToolInvocation
+    from src.nuwa.types import ToolInvocation
     func = ToolInvocation(name="async_tool", arguments='{"text": "hello"}')
     result = await manager.call_tool(func)
     assert result == "HELLO"
@@ -111,7 +112,7 @@ async def test_call_tool_with_list_args():
         return sum(args)
     tool = Tool(func=list_func, entity=tool_entity)
     manager.add_tool(tool)
-    from src.nuwa.chat import ToolInvocation
+    from src.nuwa.types import ToolInvocation
     func = ToolInvocation(name="list_tool", arguments='[1, 2, 3]')
     result = await manager.call_tool(func)
     assert result == 6
@@ -121,7 +122,7 @@ async def test_call_tool_with_list_args():
 async def test_call_tool_not_found():
     """测试调用不存在的工具"""
     manager = ToolRegistry()
-    from src.nuwa.chat import ToolInvocation
+    from src.nuwa.types import ToolInvocation
     func = ToolInvocation(name="missing", arguments='{}')
     with pytest.raises(ValueError, match="Tool 'missing' not found"):
         await manager.call_tool(func)

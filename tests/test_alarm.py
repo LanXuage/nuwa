@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, AsyncMock, patch
 import logging
 
-from src.nuwa.scheduling_tools import AlarmManager, AlarmTask, alarm_manager, get_alarm_tool
+from src.nuwa.scheduling_tools import AlarmManager, alarm_manager, get_alarm_tool
 from src.nuwa.react_agent import ReasoningActingAgent
-from src.nuwa.tool import Tool
+from src.nuwa.tools.models import Tool
 
 logger = logging.getLogger(__name__)
 

@@ -11,8 +11,9 @@ from datetime import datetime
 from typing import Literal, Callable, Optional, Dict, Any
 from dataclasses import dataclass
 
-from .tool import Tool, ToolEntity, ToolObjectParameter, ToolParameter
-from .react_agent import ReasoningActingAgent
+from .agents.base import Agent
+
+from .tools.models import Tool, ToolEntity, ToolObjectParameter, ToolParameter
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +34,12 @@ class AlarmTask:
         callback: 触发时的回调函数，接收提醒信息作为参数。
         task: 异步任务对象，用于控制闹钟调度。
     """
+
     alarm_id: str
     time: datetime
     remindee: Literal["oneself", "user"]
     reminder: str
-    agent: Optional[ReasoningActingAgent] = None
+    agent: Optional[Agent] = None
     callback: Optional[Callable[[str], Any]] = None
     task: Optional[asyncio.Task] = None
 
@@ -78,8 +80,8 @@ class AlarmManager:
         self,
         time: datetime,
         reminder: str,
-        agent: ReasoningActingAgent,
-        callback: Optional[Callable[[str], Any]] = None
+        agent: Agent,
+        callback: Optional[Callable[[str], Any]] = None,
     ) -> str:
         """为 agent 自己设置闹钟。
 
@@ -103,14 +105,14 @@ class AlarmManager:
                 remindee="oneself",
                 reminder=reminder,
                 agent=agent,
-                callback=callback
+                callback=callback,
             )
 
             # 计算延迟时间
             now = datetime.now()
             if time <= now:
                 logger.warning(f"闹钟时间 {time} 已过，立即触发")
-                delay = 0
+                delay = 0.0
             else:
                 delay = (time - now).total_seconds()
 
@@ -125,7 +127,7 @@ class AlarmManager:
         self,
         time: datetime,
         reminder: str,
-        callback: Optional[Callable[[str], Any]] = None
+        callback: Optional[Callable[[str], Any]] = None,
     ) -> str:
         """为用户设置闹钟（预留接口）。
 
@@ -148,14 +150,14 @@ class AlarmManager:
                 remindee="user",
                 reminder=reminder,
                 agent=None,
-                callback=callback
+                callback=callback,
             )
 
             # 计算延迟时间
             now = datetime.now()
             if time <= now:
                 logger.warning(f"用户闹钟时间 {time} 已过，立即触发")
-                delay = 0
+                delay = 0.0
             else:
                 delay = (time - now).total_seconds()
 
@@ -284,7 +286,7 @@ class AlarmManager:
                 "time": task.time.isoformat(),
                 "remindee": task.remindee,
                 "reminder": task.reminder,
-                "status": "active"
+                "status": "active",
             }
             for task in self.tasks.values()
         ]
@@ -294,7 +296,7 @@ class AlarmManager:
 alarm_manager = AlarmManager()
 
 
-async def get_alarm_tool(agent: ReasoningActingAgent) -> Tool:
+async def get_alarm_tool(agent: Agent) -> Tool:
     """获取闹钟工具。
 
     返回一个 Tool 实例，该工具可用于 ReasoningActingAgent 设置闹钟。
@@ -328,26 +330,23 @@ async def get_alarm_tool(agent: ReasoningActingAgent) -> Tool:
         try:
             if remindee == "oneself":
                 alarm_id = await alarm_manager.set_alarm_for_oneself(
-                    time=alarm_time,
-                    reminder=reminder,
-                    agent=agent
+                    time=alarm_time, reminder=reminder, agent=agent
                 )
                 return {
                     "success": True,
                     "message": f"已为自己设置闹钟: {reminder}",
                     "alarm_id": alarm_id,
-                    "scheduled_time": alarm_time.isoformat()
+                    "scheduled_time": alarm_time.isoformat(),
                 }
             else:  # "user"
                 alarm_id = await alarm_manager.set_alarm_for_user(
-                    time=alarm_time,
-                    reminder=reminder
+                    time=alarm_time, reminder=reminder
                 )
                 return {
                     "success": True,
                     "message": f"已为用户设置闹钟: {reminder}",
                     "alarm_id": alarm_id,
-                    "scheduled_time": alarm_time.isoformat()
+                    "scheduled_time": alarm_time.isoformat(),
                 }
         except Exception as e:
             logger.error(f"设置闹钟失败: {e}")

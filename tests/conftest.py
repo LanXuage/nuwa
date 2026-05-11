@@ -1,16 +1,11 @@
+import os
 import pytest
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import load_dotenv
 
-
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-    test_api_key: str
-
-
-settings = Settings()
+load_dotenv(override=True)
 
 
 @pytest.fixture
 def api_key():
-    yield settings.test_api_key
+    yield os.environ.get("TEST_API_KEY", "fake_key")

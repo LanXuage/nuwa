@@ -3,7 +3,9 @@ import logging
 
 from src.nuwa.react_agent import ReasoningActingAgent
 from src.nuwa.chat import ConversationAgent
-from src.nuwa.tool import ToolRegistry, ToolObjectParameter, ToolParameter, ToolInvocation
+from src.nuwa.tools.registry import ToolRegistry
+from src.nuwa.tools.models import ToolObjectParameter, ToolParameter
+from src.nuwa.types import ToolInvocation
 
 logger = logging.getLogger()
 
