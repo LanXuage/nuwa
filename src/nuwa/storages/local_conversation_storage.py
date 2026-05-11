@@ -3,8 +3,6 @@
 本模块提供 LocalConversationStorage 类，实现 ConversationStorage 抽象接口。
 每个 Session 存储为一个独立的 .msgpack 文件，支持消息的持久化、检索和清除功能。
 遵循整体架构设计，提供零外部依赖的消息存储后端。
-
-设计规范：模块化（C-001）、错误处理（C-012）、单一职责（C-006）。
 """
 
 import os
@@ -72,8 +70,6 @@ class LocalConversationStorage(ConversationStorage):
 
         Args:
             storage_dir: 对话文件存储目录路径，默认为 "./data/conversations/"。
-
-        设计规范：默认参数合理（C-011）、参数类型提示（D-014）。
         """
         super().__init__()
         self._storage_dir = storage_dir
@@ -89,8 +85,6 @@ class LocalConversationStorage(ConversationStorage):
 
         自动创建不存在的目录。扫描目录下所有 .msgpack 文件，
         msgpack 解码后填充 _store。解码失败的文件仅记录警告，不中断加载。
-
-        遵循错误处理规范（C-012），单个文件损坏不影响其他文件加载。
         """
         await super().initialize()
         os.makedirs(self._storage_dir, exist_ok=True)
@@ -112,8 +106,6 @@ class LocalConversationStorage(ConversationStorage):
 
         使用协程锁保护，遍历 _store 中所有 session，
         msgpack 编码后写入对应的 .msgpack 文件，然后清空 _store。
-
-        遵循性能优化规范（O-010），批量写入减少 I/O 次数。
         """
         async with self._lock:
             for session_id, session_data in self._store.items():

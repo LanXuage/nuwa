@@ -1,9 +1,7 @@
 """Nuwa 存储层模块，基于 Qdrant 向量数据库的消息管理器实现。
 
 本模块提供 VectorBackedStorage 类，实现 ConversationStorage 抽象接口。
-遵循抽象工厂模式（P-001），提供可插拔的消息存储后端。
 支持语义分块、向量检索和对话历史的高效管理。
-设计规范：模块化（C-001）、错误处理（C-012）、性能优化（O-010）。
 """
 
 import re
@@ -44,8 +42,6 @@ class VectorBackedStorage(ConversationStorage):
 
     实现 ConversationStorage 抽象接口，提供消息的持久化、检索和清除功能。
     利用向量嵌入进行语义检索，支持对话级别的分块和相似度合并。
-    遵循抽象工厂模式（P-001），可作为消息存储的具体实现。
-    设计规范：类名大驼峰（D-007）、单一职责（C-006）、错误处理（C-012）。
 
     Attributes:
         collection_name: Qdrant 集合名称。
@@ -82,8 +78,6 @@ class VectorBackedStorage(ConversationStorage):
             embedding_model: 嵌入模型名称，默认为 "qwen3-embedding:8b-FP16"。
             similarity_threshold: 语义相似度阈值，默认为 0.7。
             min_chunk_length: 最小分块长度，默认为 50。
-
-        设计规范：参数类型提示（D-014）、默认参数合理（C-011）。
         """
         self.collection_name = collection_name
         self.vector_size = vector_size
@@ -98,7 +92,6 @@ class VectorBackedStorage(ConversationStorage):
         """生成文本列表的向量嵌入。
 
         委托给 vector 模块的 get_embeddings 函数，统一嵌入生成逻辑。
-        遵循错误处理规范（C-012），异常由被调用函数处理。
 
         Args:
             inputs: 文本字符串列表。
@@ -119,7 +112,6 @@ class VectorBackedStorage(ConversationStorage):
 
         幂等操作，避免重复创建集合。
         同时创建必要的索引以优化查询性能。
-        遵循性能优化规范（O-010），索引加速检索。
 
         Returns:
             如果集合已存在或创建成功返回 True。
@@ -167,7 +159,6 @@ class VectorBackedStorage(ConversationStorage):
 
         结合语义检索和最近对话，返回按时间排序的消息列表。
         流程：生成查询嵌入 → 语义搜索相关点 → 获取完整对话 → 转换消息格式。
-        遵循性能优化规范（O-010），限制检索数量避免超载。
 
         Args:
             session_id: 会话标识符。
@@ -290,7 +281,6 @@ class VectorBackedStorage(ConversationStorage):
         """计算两个向量的余弦相似度。
 
         不依赖 torch，使用 numpy 实现，降低外部依赖。
-        遵循算法注释规范（D-012），解释计算过程。
 
         Args:
             vec1: 第一个向量。
@@ -314,7 +304,6 @@ class VectorBackedStorage(ConversationStorage):
         """将 Qdrant 负载转换为 OpenAI 消息格式。
 
         移除元数据字段（msg_id, conversation_id 等），保留原始消息内容。
-        遵循错误处理规范（C-012），转换失败时返回 None 并记录警告。
 
         Args:
             payload: Qdrant 点负载字典。
@@ -347,7 +336,6 @@ class VectorBackedStorage(ConversationStorage):
 
         将消息列表按语义相似度分块，每个块作为一个向量点存储。
         流程：创建集合 → 遍历消息 → 处理工具调用或文本内容 → 分块保存。
-        遵循性能优化规范（O-010），批量插入点以提高效率。
 
         Args:
             session_id: 会话标识符。
@@ -472,7 +460,6 @@ class VectorBackedStorage(ConversationStorage):
 
         按换行符分割段落，根据相似度阈值和最小长度决定合并或分割。
         算法：遍历段落，计算当前块与下一段的相似度，决定是否合并。
-        遵循复杂算法注释规范（D-012），详细解释分块逻辑。
 
         Args:
             content: 消息文本内容。
@@ -586,7 +573,6 @@ class VectorBackedStorage(ConversationStorage):
         """清除指定会话的所有历史聊天消息。
 
         根据会话 ID 过滤并删除 Qdrant 中的对应点。
-        遵循错误处理规范（C-012），异常向上抛出。
 
         Args:
             session_id: 会话标识符。

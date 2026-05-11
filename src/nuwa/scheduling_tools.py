@@ -1,8 +1,6 @@
 """Nuwa 闹钟模块，提供定时提醒功能。
 
 本模块提供闹钟管理器和相关工具，允许 ReActAgent 为自己或用户设置定时提醒。
-遵循单例模式（P-008），通过全局 alarm_manager 实例提供统一管理。
-设计规范：模块化（C-001）、错误处理（C-012）、异步任务管理（C-010）。
 """
 
 import asyncio
@@ -23,7 +21,6 @@ class AlarmTask:
     """闹钟任务数据类。
 
     封装单个闹钟任务的所有信息，便于管理和传递。
-    遵循数据类设计规范（C-006），使用 dataclass 简化代码。
 
     Attributes:
         alarm_id: 闹钟唯一标识符。
@@ -47,9 +44,7 @@ class AlarmTask:
 class AlarmManager:
     """闹钟管理器，负责闹钟的创建、调度、触发和取消。
 
-    遵循单例模式（P-008），通过模块级全局实例提供统一访问。
     使用异步锁保证线程安全，避免竞争条件。
-    设计规范：类职责明确（C-006）、错误处理（C-012）、日志记录（C-016）。
 
     Attributes:
         tasks: 活跃闹钟任务字典，键为 alarm_id，值为 AlarmTask。
@@ -67,7 +62,6 @@ class AlarmManager:
         """生成唯一的闹钟 ID。
 
         格式为 "alarm_{数字}"，数字递增。
-        遵循命名规范（D-005），ID 具有可读性。
 
         Returns:
             唯一闹钟 ID 字符串。
@@ -86,7 +80,6 @@ class AlarmManager:
         """为 agent 自己设置闹钟。
 
         闹钟触发时将唤醒指定的 agent（通过回调或日志）。
-        遵循错误处理规范（C-012），对过去时间进行警告并立即触发。
 
         Args:
             time: 提醒时间。
@@ -132,7 +125,6 @@ class AlarmManager:
         """为用户设置闹钟（预留接口）。
 
         当前仅记录日志，实际应用中应通过其他渠道（如邮件、推送）通知用户。
-        遵循接口设计规范（C-008），预留扩展点。
 
         Args:
             time: 提醒时间。
@@ -172,7 +164,6 @@ class AlarmManager:
         """调度闹钟任务。
 
         等待指定延迟后触发闹钟，处理取消和异常。
-        遵循异步任务管理规范（C-010），妥善处理 CancelledError。
 
         Args:
             alarm_task: 闹钟任务对象。
@@ -198,7 +189,6 @@ class AlarmManager:
         """触发闹钟。
 
         根据被提醒人类型分发到不同的处理函数。
-        遵循日志记录规范（C-016），记录触发事件。
 
         Args:
             alarm_task: 闹钟任务对象。
@@ -214,7 +204,6 @@ class AlarmManager:
         """唤醒 agent 自身。
 
         执行回调函数（如果提供），否则仅记录日志。
-        遵循错误处理规范（C-012），回调异常被捕获并记录。
 
         Args:
             alarm_task: 闹钟任务对象。
@@ -234,7 +223,6 @@ class AlarmManager:
         """通知用户（预留接口）。
 
         当前仅记录日志，实际应用中应通过其他方式通知用户。
-        遵循接口设计规范（C-008），为未来扩展保留。
 
         Args:
             alarm_task: 闹钟任务对象。
@@ -292,7 +280,7 @@ class AlarmManager:
         ]
 
 
-# 全局闹钟管理器实例，遵循单例模式（P-008）
+# 全局闹钟管理器实例
 alarm_manager = AlarmManager()
 
 
@@ -300,7 +288,6 @@ async def get_alarm_tool(agent: Agent) -> Tool:
     """获取闹钟工具。
 
     返回一个 Tool 实例，该工具可用于 ReasoningActingAgent 设置闹钟。
-    遵循工具注册规范，通过装饰器模式（P-003）的变体动态创建工具。
 
     Args:
         agent: 调用此工具的 ReasoningActingAgent 实例。
