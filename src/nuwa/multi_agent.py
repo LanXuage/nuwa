@@ -1,58 +1,79 @@
 import json
+import logging
 from uuid import uuid4
+from datetime import timedelta
+from typing import List, Optional
 
-from .react_agent import ReasoningActingAgent, TypeAdapter, ToolEntity
-from typing import List
+from pydantic import TypeAdapter
+
+from .agents.base import Agent, Task
+from .tools.models import ToolEntity
+from .tools import ToolKit
+from .contexts import Context
+
+logger = logging.getLogger(__name__)
 
 
-class MultiRoleAgent(ReasoningActingAgent):
+class MultiRoleAgent(Agent):
+    """Multi-role agent that selects among roles, extends the Agent ABC."""
+
     def __init__(
         self,
-        model: str,
-        api_key: str,
         role_name: str,
         role_prompt: str,
-        roles: List[str] = [],
-        excluded_roles: List[str] = [],
-        session_id=str(uuid4()),
-        stream=False,
-        messages_manager=None,
-        tools_manager=None,
-        mcp: str | None = None,
-        mcp_timeout: int = 300,
-        temperature=0.6,
-        extra_body=None,
-        max_loop=3,
-        with_time: bool = False,
-        stop=None,
-        base_url="https://api.openai.com/v1",
-        enable_chat_history=True,
-    ):
-        self.excluded_roles = excluded_roles
+        roles: Optional[List[str]] = None,
+        excluded_roles: Optional[List[str]] = None,
+        session_id: str = "",
+        **kwargs,
+    ) -> None:
+        self.role_name = role_name
+        self.role_prompt = role_prompt
+        self.roles = roles or []
+        self.excluded_roles = excluded_roles or []
         if role_name not in self.excluded_roles:
             self.excluded_roles.append(role_name)
-        self.roles = roles
-        super().__init__(
-            model=model,
-            system_prompt=role_prompt,
-            api_key=api_key,
-            session_id=session_id,
-            stream=stream,
-            messages_manager=messages_manager,
-            tools_manager=tools_manager,
-            mcp=mcp,
-            mcp_timeout=mcp_timeout,
-            temperature=temperature,
-            extra_body=extra_body,
-            max_loop=max_loop,
-            with_time=with_time,
-            stop=stop,
-            base_url=base_url,
-            enable_chat_history=enable_chat_history,
+        self.session_id = session_id or str(uuid4())
+
+    def _format_tools(self, toolkit: ToolKit) -> str:
+        """Serialize toolkit entities to JSON string for prompt injection."""
+        entities = []
+        for name in toolkit.list_tools():
+            tool = toolkit.get_tool(name)
+            if tool is not None:
+                entities.append(tool.entity)
+        adapter: TypeAdapter = TypeAdapter(List[ToolEntity])
+        return adapter.dump_json(entities, indent=None, exclude_none=True).decode()
+
+    def _format_tool_schema(self, toolkit: ToolKit) -> str:
+        """Generate the tool call JSON schema for the prompt."""
+        return json.dumps(
+            obj={
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": toolkit.list_tools(),
+                        "description": "调用的工具名称",
+                    },
+                    "action_input": {
+                        "type": ["string", "object"],
+                        "description": "调用的工具参数，参考对应工具的JSON Schema描述",
+                    },
+                },
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
         )
 
-    def parse_system_prompt(self, instruction: str):
-        tools_adapter = TypeAdapter(List[ToolEntity])
+    def build_system_prompt(
+        self, instruction: str, toolkit: Optional[ToolKit] = None
+    ) -> str:
+        """Build the system prompt from instruction and toolkit info."""
+        tools_json = "[]"
+        schema_json = "{}"
+        if toolkit:
+            tools_json = self._format_tools(toolkit)
+            schema_json = self._format_tool_schema(toolkit)
 
         return """你是一个ReAct Agent，请尽可能有效且准确地回应用户的需求。
 
@@ -67,25 +88,21 @@ class MultiRoleAgent(ReasoningActingAgent):
                 ensure_ascii=False,
                 separators=(",", ":"),
             ),
-            tools=tools_adapter.dump_json(
-                self.tools, ensure_ascii=False, indent=None, exclude_none=True
-            ).decode(),
-            tool_call_json_schema=json.dumps(
-                obj={
-                    "type": "object",
-                    "properties": {
-                        "action": {
-                            "type": "string",
-                            "enum": self.tool_names,
-                            "description": "调用的工具名称",
-                        },
-                        "action_input": {
-                            "type": ["string", "object"],
-                            "description": "调用的工具参数，参考对应工具的JSON Schema描述",
-                        },
-                    },
-                },
-                ensure_ascii=False,
-                separators=(",", ":"),
-            ),
+            tools=tools_json,
+            tool_call_json_schema=schema_json,
         )
+
+    async def execute_task(
+        self,
+        task: Task,
+        toolkit: Optional[ToolKit] = None,
+        context: Optional[Context] = None,
+        timeout: timedelta = timedelta(minutes=10),
+        max_steps: int = 10,
+        **kwargs,
+    ) -> None:
+        logger.info(
+            "MultiRoleAgent [%s] received task: %s", self.role_name, task.content
+        )
+        # TODO: implement multi-role ReAct loop with role selection
+        raise NotImplementedError("MultiRoleAgent.execute_task is not yet implemented")

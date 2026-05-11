@@ -12,10 +12,10 @@ uv run pytest tests/test_tool.py # run a single test file
 uv run ruff check src/ tests/    # lint (no ruff config — runs defaults)
 uv run ruff format src/ tests/   # format
 uv run mypy src/                 # typecheck (no mypy config — runs defaults)
+uv build                         # build source & wheel distributions
 ```
 
 - Create a `.env` file with `TEST_API_KEY=<real_key>` before running `test_re_act.py` — the `conftest.py` auto-loads it via `load_dotenv(override=True)`.
-- No CI test/lint pipeline exists. The only workflow (`.github/workflows/notify.yml`) is a WeChat Work PR notifier.
 
 ## Architecture (packages)
 
@@ -55,30 +55,42 @@ Public API (`from nuwa import ...`):
 ## Tests
 
 - Tests live in `tests/` and use `src.nuwa.*` imports (not installed package imports).
-- `test_tool.py` — pure unit tests for `ToolRegistry` (note: the source uses `ToolKit`, not `ToolRegistry` — broken import).
-- `test_re_act.py` — integration tests against `dashscope.aliyuncs.com` (requires real API key and network).
-- `test_search.py` — browser automation tests (requires Playwright + SOCKS5 proxy at hardcoded IP).
+- `test_tool.py` — unit tests for `ToolKit` (decorator-based tool registry).
 - `test_alarm.py` — unit tests for `AlarmManager`.
+- `test_react_agent.py` — unit tests for `ReActAgent` initialization and execute_task contract.
+- `test_local_conversation_storage.py` — unit tests for `LocalConversationStorage`.
+- `test_search.py` — browser automation tests (Playwright, auto-skipped in CI).
 
 **Test prerequisites**:
 - No `uv sync` → all tests fail (no deps installed).
-- `.env` with `TEST_API_KEY` → needed by all `test_re_act.py` tests.
-- Reachable `dashscope.aliyuncs.com` → for `test_re_act.py`.
+- `.env` with `TEST_API_KEY` → needed by integration tests.
 - SOCKS5 proxy at `192.168.31.45:10808` → for `test_search.py`.
-- MCP server at `192.168.110.10:12119/mcp` → for 4 MCP tests in `test_re_act.py`.
+- MCP server at `192.168.110.10:12119/mcp` → for MCP integration tests.
 
 ## ⚠️ Refactoring In Progress
 
-The project has been partially refactored from flat modules to packages. This creates broken imports:
+The project has been partially refactored from flat modules to packages. Remaining items:
 
-- **Tests** import from modules that don't exist: `src.nuwa.react_agent`, `src.nuwa.chat`, `src.nuwa.tools.registry`, `src.nuwa.types`. Most test files will fail to import.
-- **`multi_agent.py`** imports `ReasoningActingAgent` from `.react_agent` (the file doesn't exist; should be `.agents.react_agent`, but only `ReActAgent` exists there).
+- **`multi_agent.py`** — `MultiRoleAgent` now extends `Agent` ABC; `execute_task` is a stub (NotImplementedError). Full multi-role ReAct loop TBD.
 - **Docs** (`docs/README.md`, `docs/zh/README.md`) reference the old flat module structure (`from src.nuwa.llm import OpenAI`, `from src.nuwa.re_act import ReActAgent`).
 
 When writing code, use the new package-based imports:
 - `from src.nuwa.agents.react_agent import ReActAgent`
 - `from src.nuwa.llms.openai_compatible import OpenAICompatible`
 - `from src.nuwa.tools import ToolKit` (top-level public API)
+
+## CI Pipeline
+
+GitHub Actions workflow (`.github/workflows/ci.yml`) runs on:
+- **Pull requests** (opened, synchronize, reopened)
+- **Push to `main`**
+
+Jobs:
+- **lint-typecheck**: Ubuntu + Python 3.10 — ruff lint, ruff format check, mypy typecheck
+- **test-build** (matrix 3 OS × 4 Python): pytest + `uv build`; Playwright browser tests auto-skipped
+
+Required GitHub Secrets:
+- `TEST_API_KEY` — API key for LLM-dependent tests; tests skip automatically if not set
 
 ## Other Gotchas
 

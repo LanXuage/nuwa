@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CI: "true"
+
+jobs:
+  # -------------------------------------------------------------------
+  # Lint & typecheck — single job, ubuntu + Python 3.10 only
+  # -------------------------------------------------------------------
+  lint-typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.10"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Ruff lint
+        run: uv run ruff check src/ tests/
+
+      - name: Ruff format check
+        run: uv run ruff format --check src/ tests/
+
+      - name: Mypy typecheck
+        run: uv run mypy src/ --ignore-missing-imports
+
+  # -------------------------------------------------------------------
+  # Test & build — full matrix: 3 OS × 4 Python = 12 jobs
+  # -------------------------------------------------------------------
+  test-build:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install Playwright browsers
+        uses: microsoft/playwright-github-action@v1
+        with:
+          browsers: chromium
+
+      - name: Run tests
+        run: uv run pytest tests/ -v --tb=short --log-cli-level=INFO
+        env:
+          TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
+
+      - name: Build package
+        run: uv build
