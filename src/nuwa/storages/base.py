@@ -1,11 +1,12 @@
 from abc import abstractmethod
 from ..compressors import Compressor
 from ..base import AsyncClosableContext
-from typing import ByteString, Hashable, Optional
+from typing import ByteString, Hashable, Optional, List
+from pydantic import BaseModel
+from openai.types.chat import ChatCompletionMessageParam
 
 
 class KVStorage(AsyncClosableContext):
-
     def __init__(self, compressor: Optional[Compressor] = None) -> None:
         self.compressor = compressor
 
@@ -31,4 +32,31 @@ class KVStorage(AsyncClosableContext):
 
     @abstractmethod
     async def _get(self, key: Hashable) -> bytes:
+        raise NotImplementedError
+
+
+class Session(BaseModel):
+    session_id: str
+    title: str
+    description: str = ""
+
+
+class ConversationStorage(AsyncClosableContext):
+    async def initialize(self) -> None:
+        pass
+
+    @abstractmethod
+    async def get_messages(
+        self, session: Session, user_input: str = ""
+    ) -> List[ChatCompletionMessageParam]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def save_messages(
+        self, session: Session, messages: List[ChatCompletionMessageParam]
+    ):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def clear_messages(self, session_id: str):
         raise NotImplementedError
