@@ -16,4 +16,5 @@ wheels/
 # Others
 *.png
 .env
+.opencode
 
