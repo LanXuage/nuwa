@@ -71,9 +71,7 @@ jobs:
         run: uv sync
 
       - name: Install Playwright browsers
-        uses: microsoft/playwright-github-action@v1
-        with:
-          browsers: chromium
+        run: uv run playwright install --with-deps chromium
 
       - name: Run tests
         run: uv run pytest tests/ -v --tb=short --log-cli-level=INFO
