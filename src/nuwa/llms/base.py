@@ -1,6 +1,6 @@
 import openai
 
-from typing import Iterable, List
+from typing import Iterable
 from abc import abstractmethod
 
 from openai.types.chat import (

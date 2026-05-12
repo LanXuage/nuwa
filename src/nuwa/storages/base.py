@@ -17,8 +17,8 @@ class KVStorage(AsyncClosableContext):
         return await self._set(key=key, value=value_compressed)
 
     async def get(
-        self, key: Hashable, default: Optional[bytes] = None
-    ) -> Optional[bytes]:
+        self, key: Hashable, default: Optional[ByteString] = None
+    ) -> Optional[ByteString]:
         value = await self._get(key=key)
         if value is None:
             return default
@@ -27,11 +27,11 @@ class KVStorage(AsyncClosableContext):
         return value
 
     @abstractmethod
-    async def _set(self, key: Hashable, value: bytes):
+    async def _set(self, key: Hashable, value: ByteString):
         raise NotImplementedError
 
     @abstractmethod
-    async def _get(self, key: Hashable) -> bytes:
+    async def _get(self, key: Hashable) -> Optional[ByteString]:
         raise NotImplementedError
 
 

@@ -3,6 +3,7 @@ import json
 
 from typing import List, Optional, Dict
 from .base import SystemPromptBuilder, Goal, Format, Example, PromptLanguage
+from ..contexts import Context
 
 LANG_TEMPLATES: Dict[str, Dict[str, str]] = {
     "English": {
@@ -275,7 +276,7 @@ class SimpleSystemPromptBuilder(SystemPromptBuilder):
         return text + "\n"
 
     # ---------- 总拼装 ----------
-    def build(self) -> str:
+    def build(self, context: Optional[Context] = None) -> str:
         lang = self.promptLang
         if lang not in LANG_TEMPLATES:
             raise ValueError(f"Unsupported prompt language '{lang}'")

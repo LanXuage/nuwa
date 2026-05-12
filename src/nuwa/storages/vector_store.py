@@ -32,7 +32,7 @@ from qdrant_client.http.models import (
 )
 from openai.types.chat import ChatCompletionMessageParam
 
-from .base import ConversationStorage
+from .base import ConversationStorage, Session
 
 logger = logging.getLogger()
 
@@ -153,7 +153,7 @@ class VectorBackedStorage(ConversationStorage):
         return True
 
     async def get_messages(
-        self, session_id: str, user_input: str = ""
+        self, session: Session, user_input: str = ""
     ) -> List[ChatCompletionMessageParam]:
         """检索与会话相关的历史消息。
 
@@ -161,7 +161,7 @@ class VectorBackedStorage(ConversationStorage):
         流程：生成查询嵌入 → 语义搜索相关点 → 获取完整对话 → 转换消息格式。
 
         Args:
-            session_id: 会话标识符。
+            session: 会话对象。
             user_input: 用户输入（用于语义检索），默认为空。
 
         Returns:
@@ -171,6 +171,8 @@ class VectorBackedStorage(ConversationStorage):
             内部异常被捕获并记录，返回空列表。
         """
         await self.try_create_collection()
+
+        session_id = session.session_id
 
         time_messages_map: Dict[int, List[ChatCompletionMessageParam]] = {}
 
@@ -329,7 +331,7 @@ class VectorBackedStorage(ConversationStorage):
 
     async def save_messages(
         self,
-        session_id: str,
+        session: Session,
         messages: List[ChatCompletionMessageParam],
     ):
         """保存对话消息到 Qdrant，支持语义分块。
@@ -338,7 +340,7 @@ class VectorBackedStorage(ConversationStorage):
         流程：创建集合 → 遍历消息 → 处理工具调用或文本内容 → 分块保存。
 
         Args:
-            session_id: 会话标识符。
+            session: 会话对象。
             messages: 要保存的消息列表。
 
         Raises:
@@ -348,6 +350,8 @@ class VectorBackedStorage(ConversationStorage):
             return
 
         await self.try_create_collection()
+
+        session_id = session.session_id
 
         conversation_id = str(uuid4())
         points: List[PointStruct] = []

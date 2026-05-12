@@ -20,7 +20,7 @@ class OpenAIEmbeddedEncoder(EmbeddedEncoder):
         self._api_key = api_key
         self._base_url = base_url
         self._model = model
-        self._client = AsyncOpenAI(api_key=self._api_key, base_url=self._base_url)
+        self._client: Optional[AsyncOpenAI] = AsyncOpenAI(api_key=self._api_key, base_url=self._base_url)
 
     async def _embeddings(self, texts, dimension=4096, task=None) -> List[List[float]]:
         if self._client is None:

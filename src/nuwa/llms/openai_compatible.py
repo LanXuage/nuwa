@@ -2,7 +2,7 @@ import logging
 
 import httpx
 
-from typing import Iterable, Callable, Awaitable
+from typing import Iterable, Callable, Awaitable, Optional
 
 from openai import AsyncOpenAI, NotGiven, not_given
 from openai._client import AsyncStream
@@ -25,7 +25,7 @@ class OpenAICompatible(LLM):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         **kwargs,
     ) -> None:
-        self._client = AsyncOpenAI(
+        self._client: Optional[AsyncOpenAI] = AsyncOpenAI(
             api_key=api_key, base_url=base_url, timeout=timeout, **kwargs
         )
         self._model = model

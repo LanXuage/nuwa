@@ -3,20 +3,20 @@ import asyncio
 import msgpack
 
 from .base import KVStorage
-from typing import Hashable, Optional, Union
+from typing import ByteString, Hashable, Optional, Union
 
 
 class LocalKVStorage(KVStorage):
     def __init__(self, path: Union[str, os.PathLike[str]]):
         self._path = path
-        self._store: dict[Hashable, bytes] = {}
+        self._store: dict[Hashable, ByteString] = {}
         self._lock = asyncio.Lock()
 
-    async def _set(self, key: Hashable, value: bytes) -> None:
+    async def _set(self, key: Hashable, value: ByteString) -> None:
         async with self._lock:
             self._store[key] = value
 
-    async def _get(self, key: Hashable) -> Optional[bytes]:
+    async def _get(self, key: Hashable) -> Optional[ByteString]:
         async with self._lock:
             return self._store.get(key)
 

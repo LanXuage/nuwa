@@ -1,6 +1,7 @@
 import re
 import logging
 import asyncio
+import typing
 
 from json_repair import loads
 from typing import Dict, Optional, Callable, List, Union

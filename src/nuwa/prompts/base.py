@@ -31,62 +31,62 @@ Format: TypeAlias = Union[str, JSONSchema]
 
 class PromptBuilder(ABC):
     @abstractmethod
-    async def build(self, context: Optional[Context] = None) -> str:
+    def build(self, context: Optional[Context] = None) -> str:
         raise NotImplementedError
 
 
 class SystemPromptBuilder(PromptBuilder):
 
     @abstractmethod
-    async def set_role(self, role: str) -> "SystemPromptBuilder":
+    def set_role(self, role: str) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_focused_expertise(
+    def set_focused_expertise(
         self, expertise: List[str]
     ) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_constraints(self, constraints: List[str]) -> "SystemPromptBuilder":
+    def set_constraints(self, constraints: List[str]) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_tone(self, tone: str) -> "SystemPromptBuilder":
+    def set_tone(self, tone: str) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_style(self, style: str) -> "SystemPromptBuilder":
+    def set_style(self, style: str) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_goal(self, goal: Goal) -> "SystemPromptBuilder":
+    def set_goal(self, goal: Goal) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_script(self, script: List[str]) -> "SystemPromptBuilder":
+    def set_script(self, script: List[str]) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_prompt_lang(self, lang: PromptLanguage) -> "SystemPromptBuilder":
+    def set_prompt_lang(self, lang: PromptLanguage) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_reasoning_lang(self, lang: PromptLanguage) -> "SystemPromptBuilder":
+    def set_reasoning_lang(self, lang: PromptLanguage) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_output_lang(self, lang: PromptLanguage) -> "SystemPromptBuilder":
+    def set_output_lang(self, lang: PromptLanguage) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_few_shot(self, examples: Example) -> "SystemPromptBuilder":
+    def set_few_shot(self, examples: List[Example]) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_output_format(self, format: str) -> "SystemPromptBuilder":
+    def set_output_format(self, format: Format) -> "SystemPromptBuilder":
         raise NotImplementedError
 
     @abstractmethod
-    async def set_prompt_completion(self, prompt: str) -> "SystemPromptBuilder":
+    def set_prompt_completion(self, prompt: str) -> "SystemPromptBuilder":
         raise NotImplementedError
